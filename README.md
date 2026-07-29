@@ -22,8 +22,10 @@ Interactive docs: http://localhost:8000/docs
 
 ## Auth
 
-Read endpoints are open. Every write endpoint requires the `X-API-Key` header, matched
-against `PAM_LAB_API_KEY` (default `lab-demo-key`).
+Read endpoints are open. Every write endpoint requires the `X-API-Key` header, compared in
+constant time against `PAM_LAB_API_KEY`. If that variable is unset, a random key is generated
+at startup and logged as a warning — there is no well-known default. `docker-compose.yml`
+sets `lab-demo-key` for local lab use.
 
 ## Endpoints
 

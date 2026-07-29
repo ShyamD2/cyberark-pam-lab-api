@@ -1,4 +1,6 @@
+import logging
 import os
+import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
 from fastapi.responses import JSONResponse
@@ -21,7 +23,20 @@ from app.models import (
 from app.store import ConflictError, LabStore, NotFoundError, seed
 
 API_KEY_ENV = "PAM_LAB_API_KEY"
-DEFAULT_API_KEY = "lab-demo-key"
+
+logger = logging.getLogger(__name__)
+
+
+def _resolve_api_key() -> str:
+    key = os.getenv(API_KEY_ENV)
+    if key:
+        return key
+    key = secrets.token_urlsafe(24)
+    logger.warning("%s is unset; generated an ephemeral write key: %s", API_KEY_ENV, key)
+    return key
+
+
+API_KEY = _resolve_api_key()
 
 store = seed(LabStore())
 
@@ -33,8 +48,7 @@ app = FastAPI(
 
 
 def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
-    expected = os.getenv(API_KEY_ENV, DEFAULT_API_KEY)
-    if x_api_key != expected:
+    if not x_api_key or not secrets.compare_digest(x_api_key, API_KEY):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid or missing X-API-Key")
 
 
