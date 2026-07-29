@@ -50,7 +50,9 @@ class LabStore:
 
     # safes
     def list_safes(self) -> list[Safe]:
-        return sorted(self.safes.values(), key=lambda s: s.name)
+        with self._lock:
+            items = list(self.safes.values())
+        return sorted(items, key=lambda s: s.name)
 
     def get_safe(self, safe_id: str) -> Safe:
         try:
@@ -87,7 +89,8 @@ class LabStore:
         status: AccountStatus | None = None,
         risk_level: RiskLevel | None = None,
     ) -> list[Account]:
-        items = list(self.accounts.values())
+        with self._lock:
+            items = list(self.accounts.values())
         if safe_id:
             items = [a for a in items if a.safe_id == safe_id]
         if status:
@@ -146,7 +149,8 @@ class LabStore:
 
     # sessions
     def list_sessions(self, status: SessionStatus | None = None) -> list[PamSession]:
-        items = list(self.sessions.values())
+        with self._lock:
+            items = list(self.sessions.values())
         if status:
             items = [s for s in items if s.status == status]
         return sorted(items, key=lambda s: s.started_at, reverse=True)
