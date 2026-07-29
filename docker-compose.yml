@@ -1,0 +1,8 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      PAM_LAB_API_KEY: ${PAM_LAB_API_KEY:-lab-demo-key}
+    restart: unless-stopped
