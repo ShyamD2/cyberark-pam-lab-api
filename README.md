@@ -53,3 +53,23 @@ pip install -e '.[dev]'
 pytest -q
 ruff check .
 ```
+
+
+## Architecture & PAM Workflow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as Security Engineer / Auditor
+    participant API as FastAPI REST Gateway
+    participant Vault as In-Memory Safe Vault
+    participant PSM as Session Monitor
+
+    Admin->>API: POST /api/v1/safes (Provision Vault Safe)
+    API->>Vault: Store Safe Metadata & Access Policies
+    Admin->>API: POST /api/v1/accounts (Add Privileged Account)
+    API->>Vault: Bind Account & Rotate Mock Secret
+    Admin->>API: POST /api/v1/sessions/connect
+    API->>PSM: Initiate Isolated Telemetry Session
+    PSM-->>Admin: Authorized Session Token & Audit Trail
+```
